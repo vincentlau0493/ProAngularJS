@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="TodoApp">
+<head>
+	<meta charset="UTF-8">
+	<title>Todo List</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
+</head>
+<body>
+	<script>
+		// var model = {
+		// 	name: "Vincent",
+		// 	items: [
+		// 		{task:"Reading", done: false},
+		// 		{task:"Writing", done: false},
+		// 		{task:"Speaking", done: false},
+		// 		{task:"Listening", done: true},
+		// 		{task:"Rating...", done: false},
+		// 	]
+		// };
+
+		var app = angular.module('TodoApp', []);
+		var model = {};
+		//load by ajax
+		app.run(function($http){ //load module
+			$http.get("todo.json").success(function(data){
+				console.log(data);
+				model.name = data.name;
+				model.items = data.items;
+			})
+		})
+
+		//customize filter
+		app.filter("checkedTasks", function(){
+			return function(items, showComplete) {
+				var res = [];
+				angular.forEach(items, function(item){ //use angular.forEach is for safety
+					if (showComplete || !item.done) {
+						res.push(item);
+					}
+
+				})
+				return res;
+			}
+		})
+
+		//controller
+		app.controller("TodoController",function($scope){
+			$scope.todo = model;
+
+			$scope.incompleteCount = function(){
+				var count = 0;
+				angular.forEach($scope.todo.items, function(item){
+					if (!item.done) count++;
+				})
+				return count;
+			}
+
+			$scope.warningLevel = function() {
+				return $scope.incompleteCount()<3 ? "label-success" : "label-warning";
+			}
+
+			$scope.addTask = function(newTask) {
+				var obj = {};
+				obj.task = newTask;
+				obj.done = false;
+				//this -> $scope
+				this.todo.items.push(obj);
+				this.newTask = ""; //init
+			}
+
+
+
+		})
+
+	</script>
+	<div class="container" ng-controller="TodoController">
+		<h1>Todo List for {{todo.name}} </h1>
+		<h4>Incomplete: <label ng-hide="incompleteCount()==0" ng-class="warningLevel()">{{incompleteCount()}}</label></h4>
+		<div class="input-group">
+			<input type="text" class="form-control" placeholder="Add Todo" ng-model="newTask">
+			<span class="input-group-btn">
+			<button class="btn btn-default" type="button" ng-click="addTask(newTask)">Add</button>
+			</span>
+		</div><!-- /input-group -->
+		<h5 ng-hide="incompleteCount()>0">No task right now!</h5>
+		<table class="table table-striped" style="margin-top:20px;">
+			<tr>
+				<th>Tasks</th>
+				<th>Check</th>
+				<th>Status</th>
+			</tr>
+			<tr ng-repeat="item in todo.items | checkedTasks: showComplete | orderBy: '-task'">
+				<td>{{item.task}}</td>
+				<td><input type="checkbox" ng-model="item.done"></td>
+				<td>{{item.done}}</td>
+			</tr>
+		</table>
+		<small><input type="checkbox" ng-model="showComplete"> Show Complete</small>
+	</div>
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+

@@ -1,0 +1,10 @@
+{
+	"name": "AngularJS",
+	"items": [
+		{"task":"Reading", "done": false},
+		{"task":"Writing", "done": false},
+		{"task":"Speaking", "done": false},
+		{"task":"Listening", "done": true},
+		{"task":"Rating...", "done": false}
+	]
+}
